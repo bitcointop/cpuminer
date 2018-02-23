@@ -5,7 +5,7 @@
 
 set -e
 
-aclocal
+aclocal -I.
 autoheader
 automake --gnu --add-missing --copy
 autoconf
