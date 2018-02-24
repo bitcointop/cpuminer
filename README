@@ -69,3 +69,15 @@ and all_proxy environment variables.
 Also many issues and FAQs are covered in the forum thread
 dedicated to this program,
 	https://bitcointalk.org/index.php?topic=55038.0
+	
+# Pool mining
+
+```
+./minerd --algo=sha256d --threads=1 --coinbase-sig="bitbaba" --url=stratum+tcp://pool.bitbaba.com:3333 --no-getwork --user=GepxCsbgTYKM4Rzz2s2zZfwYbQ3TrJqoQV --pass=x --debug --protocol-dump
+```
+
+# Solo mining
+
+```
+./minerd --algo=sha256d --threads=1 --coinbase-sig="bitbaba" --coinbase-addr=GepxCsbgTYKM4Rzz2s2zZfwYbQ3TrJqoQV --url=http://pool.bitbaba.com:3333 --no-getwork --user=rpcuser --pass=rpcpass --debug --protocol-dump
+```
