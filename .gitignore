@@ -1,4 +1,5 @@
-
+/*.dll
+/test.bat
 minerd
 minerd.exe
 *.o

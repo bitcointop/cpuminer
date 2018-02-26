@@ -2,9 +2,9 @@ AC_INIT([cpuminer], [2.5.0])
 
 AC_PREREQ([2.59c])
 AC_CANONICAL_SYSTEM
-AC_CONFIG_SRCDIR([cpu-miner.c])
+AC_CONFIG_SRCDIR([src/cpu-miner.c])
 AM_INIT_AUTOMAKE([gnu])
-AC_CONFIG_HEADERS([cpuminer-config.h])
+AC_CONFIG_HEADERS([src/cpuminer-config.h])
 
 dnl Make sure anyone changing configure.ac/Makefile.am has a clue
 AM_MAINTAINER_MODE
