@@ -130,7 +130,8 @@ AC_SUBST(WS2_LIBS)
 
 AC_CONFIG_FILES([
 	Makefile
-	compat/Makefile
-	compat/jansson/Makefile
+	src/Makefile
+	src/compat/Makefile
+	src/compat/jansson/Makefile
 	])
 AC_OUTPUT
