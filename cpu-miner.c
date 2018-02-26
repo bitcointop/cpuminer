@@ -348,6 +348,8 @@ static bool gbt_work_decode(const json_t *val, struct work *work)
 	int i, n;
 	uint32_t version, curtime, bits;
 	uint32_t prevhash[8];
+    uint32_t utxo_ser_hash[8];
+    bool has_utxo_ser_hash = false;
 	uint32_t target[8];
 	int cbtx_size;
 	unsigned char *cbtx = NULL;
@@ -404,6 +406,13 @@ static bool gbt_work_decode(const json_t *val, struct work *work)
 		applog(LOG_ERR, "JSON invalid previousblockhash");
 		goto out;
 	}
+
+    if (unlikely(!jobj_binary(val, "utxo_ser_hash", utxo_ser_hash, sizeof(utxo_ser_hash)))) {
+        //applog(LOG_ERR, "JSON invalid utxo_ser_hash");
+        //goto out;
+    }else{
+        has_utxo_ser_hash = true;
+    }
 
 	tmp = json_object_get(val, "curtime");
 	if (!tmp || !json_is_integer(tmp)) {
@@ -485,6 +494,7 @@ static bool gbt_work_decode(const json_t *val, struct work *work)
 		memcpy(cbtx+cbtx_size, pk_script, pk_script_size);
 		cbtx_size += pk_script_size;
 		if (segwit) {
+            unsigned char (*cmmit_tree)[32] = calloc(2, 32);
 			unsigned char (*wtree)[32] = calloc(tx_count + 2, 32);
 			memset(cbtx+cbtx_size, 0, 8); /* value */
 			cbtx_size += 8;
@@ -513,7 +523,18 @@ static bool gbt_work_decode(const json_t *val, struct work *work)
 				for (i = 0; i < n; i++)
 					sha256d(wtree[i], wtree[2*i], 64);
 			}
-			memset(wtree[1], 0, 32);  /* witness reserved value = 0 */
+
+            if (has_utxo_ser_hash){
+                for (i = 0; i < 8; i++) ((uint32_t *)(cmmit_tree[0]))[i] = le32dec(utxo_ser_hash + i);
+                memset(cmmit_tree[1], 0, 32);/* witness reserved value = 0 */
+                // wtree[1] = DHash(utxo_ser_hash|reservedData_000000);
+                sha256d(wtree[1], cmmit_tree[0], 64);
+            }else{
+                // wtree[1] = (reservedData_000000);
+                memset(wtree[1], 0, 32);  /* witness reserved value = 0 */
+            }
+
+            // fill the commitment, in vout[1]
 			sha256d(cbtx+cbtx_size, wtree[0], 64);
 			cbtx_size += 32;
 			free(wtree);
@@ -1099,8 +1120,12 @@ static void stratum_gen_work(struct stratum_ctx *sctx, struct work *work)
 
 	if (opt_algo == ALGO_SCRYPT)
 		diff_to_target(work->target, sctx->job.diff / 65536.0);
-	else
-		diff_to_target(work->target, sctx->job.diff);
+    else{
+        // (work of btc = max256/compact(0x1d00ffff)
+        // (work of gold= max256/compact(0x1e0f901d)
+        // rel_diff = btc/gold = compact(0x1e0f901d)/compact(0x1d00ffff) = 3984.1740749217975;
+        diff_to_target(work->target, sctx->job.diff/ 3984.1740749217975);
+    }
 }
 
 static void *miner_thread(void *userdata)
