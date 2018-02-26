@@ -1,0 +1,1 @@
+minerd --algo=sha256d --threads=1 --coinbase-sig="bitbaba" --coinbase-addr=3BwTMmmCeiU5evK1ju52PHU9VRJXugzrZ4 --url=http://127.0.0.1:30332/ --no-getwork --user=rpcuser --pass=rpcpassword --debug --protocol-dump
