@@ -4,8 +4,8 @@ License: GPLv2.  See COPYING for details.
 
 # Dependencies:
 
-- (libcurl)[http://curl.haxx.se/libcurl/]
-- (jansson is included in-tree)[http://www.digip.org/jansson/]
+- [libcurl](http://curl.haxx.se/libcurl/)
+- [jansson is included in-tree](http://www.digip.org/jansson/)
 		
 
 # Basic *nix build instructions:
@@ -26,7 +26,7 @@ make
 Install MinGW and the MSYS Developer Tool Kit (http://www.mingw.org/)
 	* Make sure you have mstcpip.h in MinGW\include
 If using MinGW-w64, install pthreads-w64
-Install libcurl devel (http://curl.haxx.se/download.html)
+Install libcurl [devel](http://curl.haxx.se/download.html)
 	* Make sure you have libcurl.m4 in MinGW\share\aclocal
 	* Make sure you have curl-config in MinGW\bin
 In the MSYS shell, run:
@@ -69,7 +69,7 @@ When the --proxy option is not used, the program honors the http_proxy
 and all_proxy environment variables.
 
 Also many issues and FAQs are covered in the forum thread
-dedicated to this (program)[https://bitcointalk.org/index.php?topic=55038.0]
+dedicated to this [program](https://bitcointalk.org/index.php?topic=55038.0)
 	
 # Pool mining
 
