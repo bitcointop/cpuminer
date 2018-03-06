@@ -348,8 +348,8 @@ static bool gbt_work_decode(const json_t *val, struct work *work)
 	int i, n;
 	uint32_t version, curtime, bits;
 	uint32_t prevhash[8];
-    uint32_t utxo_ser_hash[8];
-    bool has_utxo_ser_hash = false;
+    uint32_t ver0_commitment[8];
+    bool has_ver0_commitment = false;
 	uint32_t target[8];
 	int cbtx_size;
 	unsigned char *cbtx = NULL;
@@ -407,11 +407,11 @@ static bool gbt_work_decode(const json_t *val, struct work *work)
 		goto out;
 	}
 
-    if (unlikely(!jobj_binary(val, "utxo_ser_hash", utxo_ser_hash, sizeof(utxo_ser_hash)))) {
-        //applog(LOG_ERR, "JSON invalid utxo_ser_hash");
+    if (unlikely(!jobj_binary(val, "ver0_commitment", ver0_commitment, sizeof(ver0_commitment)))) {
+        //applog(LOG_ERR, "JSON invalid ver0_commitment");
         //goto out;
     }else{
-        has_utxo_ser_hash = true;
+        has_ver0_commitment = true;
     }
 
 	tmp = json_object_get(val, "curtime");
@@ -524,10 +524,10 @@ static bool gbt_work_decode(const json_t *val, struct work *work)
 					sha256d(wtree[i], wtree[2*i], 64);
 			}
 
-            if (has_utxo_ser_hash){
-                for (i = 0; i < 8; i++) ((uint32_t *)(cmmit_tree[0]))[i] = le32dec(utxo_ser_hash + i);
+            if (has_ver0_commitment){
+                for (i = 0; i < 8; i++) ((uint32_t *)(cmmit_tree[0]))[i] = le32dec(ver0_commitment + i);
                 memset(cmmit_tree[1], 0, 32);/* witness reserved value = 0 */
-                // wtree[1] = DHash(utxo_ser_hash|reservedData_000000);
+                // wtree[1] = DHash(ver0_commitment|reservedData_000000);
                 sha256d(wtree[1], cmmit_tree[0], 64);
             }else{
                 // wtree[1] = (reservedData_000000);
@@ -1100,6 +1100,8 @@ static void stratum_gen_work(struct stratum_ctx *sctx, struct work *work)
 	/* Assemble block header */
 	memset(work->data, 0, 128);
 	work->data[0] = le32dec(sctx->job.version);
+	// Note: byte order of `prevhash'
+    //for (i = 0; i < 32; i++)printf("%02x", sctx->job.prevhash[i]); printf("\n");
 	for (i = 0; i < 8; i++)
 		work->data[1 + i] = le32dec((uint32_t *)sctx->job.prevhash + i);
 	for (i = 0; i < 8; i++)
@@ -1108,6 +1110,7 @@ static void stratum_gen_work(struct stratum_ctx *sctx, struct work *work)
 	work->data[18] = le32dec(sctx->job.nbits);
 	work->data[20] = 0x80000000;
 	work->data[31] = 0x00000280;
+    //for (i = 0; i < 128; i++) printf("%02x", ((unsigned char *)work->data)[i]); printf("\n");
 
 	pthread_mutex_unlock(&sctx->work_lock);
 
@@ -1122,9 +1125,9 @@ static void stratum_gen_work(struct stratum_ctx *sctx, struct work *work)
 		diff_to_target(work->target, sctx->job.diff / 65536.0);
     else{
         // (work of btc = max256/compact(0x1d00ffff)
-        // (work of gold= max256/compact(0x1e0f901d)
-        // rel_diff = btc/gold = compact(0x1e0f901d)/compact(0x1d00ffff) = 3984.1740749217975;
-        diff_to_target(work->target, sctx->job.diff/ 3984.1740749217975);
+        // (work of gold= max256/compact(0x1e0ffff0)
+        // rel_diff = btc/gold = compact(0x1e0ffff0)/compact(0x1d00ffff) = 65536;
+        diff_to_target(work->target, sctx->job.diff/ 65536.0);
     }
 }
 
