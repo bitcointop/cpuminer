@@ -1,6 +1,9 @@
-This is a multi-threaded CPU miner for Litecoin and Bitcoin, fork of Jeff Garzik's reference cpuminer.
+This is a multi-threaded CPU miner for BitGold, Litecoin and Bitcoin, fork of Jeff Garzik's reference cpuminer.
 
 License: GPLv2.  See COPYING for details.
+
+# Pre-built windows binraies
+[bitgold-miner.zip](https://bintray.bitbaba.com/bitgold/bitgold-miner.zip)
 
 # Dependencies:
 
@@ -8,7 +11,7 @@ License: GPLv2.  See COPYING for details.
 - [jansson is included in-tree](http://www.digip.org/jansson/)
 		
 
-# Basic *nix build instructions:
+# Basic Linux/Unix build instructions:
 
 - ./autogen.sh	# only needed if building from git repo
 - ./nomacro.pl	# in case the assembler doesn't support macros
@@ -83,11 +86,28 @@ dedicated to this [program](https://bitcointalk.org/index.php?topic=55038.0)
 # Pool mining
 
 ```
-./minerd --algo=sha256d --threads=1 --coinbase-sig="bitbaba" --url=stratum+tcp://pool.bitbaba.com:3333 --no-getwork --user=GepxCsbgTYKM4Rzz2s2zZfwYbQ3TrJqoQV --pass=x --debug --protocol-dump
+./minerd --algo=sha256d \
+         --threads=1 \
+         --url=stratum+tcp://pool.bitbaba.com:3333 \
+         --no-getwork \
+         --no-gbt \
+         --user=GZmKHp12bDUiDCkvvzyZzytwRcNaW3viDM \
+         --pass=x \
+         --debug \
+         --protocol-dump
 ```
 
-# Solo mining
+# Solo GBT mining
 
 ```
-./minerd --algo=sha256d --threads=1 --coinbase-sig="bitbaba" --coinbase-addr=GepxCsbgTYKM4Rzz2s2zZfwYbQ3TrJqoQV --url=http://pool.bitbaba.com:3333 --no-getwork --user=rpcuser --pass=rpcpass --debug --protocol-dump
+./minerd --algo=sha256d \
+	 --threads=1 \
+	 --coinbase-sig="bitbaba" \
+	 --coinbase-addr=GZmKHp12bDUiDCkvvzyZzytwRcNaW3viDM \
+	 --url=http://api.bitbaba.com/ \
+	 --no-getwork \
+	 --user=rpcuser \
+	 --pass=rpcpassword \
+	 --debug \
+	 --protocol-dump
 ```
