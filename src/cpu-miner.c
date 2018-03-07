@@ -1127,7 +1127,7 @@ static void stratum_gen_work(struct stratum_ctx *sctx, struct work *work)
         // (work of btc = max256/compact(0x1d00ffff)
         // (work of gold= max256/compact(0x1e0ffff0)
         // rel_diff = btc/gold = compact(0x1e0ffff0)/compact(0x1d00ffff) = 65536;
-        diff_to_target(work->target, sctx->job.diff/ 65536.0);
+        diff_to_target(work->target, sctx->job.diff/ 4096.0);
     }
 }
 
