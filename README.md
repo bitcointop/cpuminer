@@ -1,3 +1,6 @@
+GoldMiner
+-------------------
+
 This is a multi-threaded CPU miner for BitGold, Litecoin and Bitcoin, fork of Jeff Garzik's reference cpuminer.
 
 License: GPLv2.  See COPYING for details.
