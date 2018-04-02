@@ -199,6 +199,28 @@ static void sha256d_80_swap(uint32_t *hash, const uint32_t *data)
 		hash[i] = swab32(hash[i]);
 }
 
+void sha256s(unsigned char *hash, const unsigned char *data, int len)
+{
+    uint32_t S[16], T[16];
+    int i, r;
+
+    sha256_init(S);
+    for (r = len; r > -9; r -= 64) {
+        if (r < 64)
+            memset(T, 0, 64);
+        memcpy(T, data + len - r, r > 64 ? 64 : (r < 0 ? 0 : r));
+        if (r >= 0 && r < 64)
+            ((unsigned char *)T)[r] = 0x80;
+        for (i = 0; i < 16; i++)
+            T[i] = be32dec(T + i);
+        if (r < 56)
+            T[15] = 8 * len;
+        sha256_transform(S, T, 0);
+    }
+    for (i = 0; i < 8; i++)
+        be32enc((uint32_t *)hash + i, S[i]);
+}
+
 void sha256d(unsigned char *hash, const unsigned char *data, int len)
 {
 	uint32_t S[16], T[16];
@@ -630,4 +652,62 @@ int scanhash_sha256d(int thr_id, uint32_t *pdata, const uint32_t *ptarget,
 	*hashes_done = n - first_nonce + 1;
 	pdata[19] = n;
 	return 0;
+}
+
+int scanhash_sha256t(int thr_id, uint32_t *pdata, const uint32_t *ptarget,
+    uint32_t max_nonce, unsigned long *hashes_done)
+{
+    unsigned char hash[32] __attribute__((aligned(32)));
+    uint32_t n = pdata[19] - 1;
+    const uint32_t first_nonce = pdata[19];
+
+    do {
+        pdata[19] = ++n;
+        sha256d(hash, (unsigned char *)pdata, 128); sha256s(hash, hash, 32);
+
+        uint32_t words[8];
+        for (int i = 0; i < 8; i++){
+            words[8-i-1] = swab32(((uint32_t*)hash)[i]);
+        }
+
+        if (fulltest(words, ptarget)) {
+            *hashes_done = n - first_nonce + 1;
+            return 1;
+        }
+
+    } while (n < max_nonce && !work_restart[thr_id].restart);
+
+    *hashes_done = n - first_nonce + 1;
+    pdata[19] = n;
+
+    return 0;
+}
+
+int scanhash_sha256q(int thr_id, uint32_t *pdata, const uint32_t *ptarget,
+    uint32_t max_nonce, unsigned long *hashes_done)
+{
+    unsigned char hash[32] __attribute__((aligned(32)));
+    uint32_t n = pdata[19] - 1;
+    const uint32_t first_nonce = pdata[19];
+
+    do {
+        pdata[19] = ++n;
+        sha256d(hash, (unsigned char *)pdata, 128); sha256d(hash, hash, 32);
+
+        uint32_t words[8];
+        for (int i = 0; i < 8; i++){
+            words[8-i-1] = swab32(((uint32_t*)hash)[i]);
+        }
+
+        if (fulltest(words, ptarget)) {
+            *hashes_done = n - first_nonce + 1;
+            return 1;
+        }
+
+    } while (n < max_nonce && !work_restart[thr_id].restart);
+
+    *hashes_done = n - first_nonce + 1;
+    pdata[19] = n;
+
+    return 0;
 }

@@ -134,6 +134,7 @@ static inline void le32enc(void *pp, uint32_t x)
 
 void sha256_init(uint32_t *state);
 void sha256_transform(uint32_t *state, const uint32_t *block, int swap);
+void sha256s(unsigned char *hash, const unsigned char *data, int len);
 void sha256d(unsigned char *hash, const unsigned char *data, int len);
 
 #ifdef USE_ASM
@@ -153,6 +154,10 @@ void sha256_transform_8way(uint32_t *state, const uint32_t *block, int swap);
 
 extern int scanhash_sha256d(int thr_id, uint32_t *pdata,
 	const uint32_t *ptarget, uint32_t max_nonce, unsigned long *hashes_done);
+extern int scanhash_sha256t(int thr_id, uint32_t *pdata,
+    const uint32_t *ptarget, uint32_t max_nonce, unsigned long *hashes_done);
+extern int scanhash_sha256q(int thr_id, uint32_t *pdata,
+    const uint32_t *ptarget, uint32_t max_nonce, unsigned long *hashes_done);
 
 extern unsigned char *scrypt_buffer_alloc(int N);
 extern int scanhash_scrypt(int thr_id, uint32_t *pdata,
