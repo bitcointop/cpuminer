@@ -103,11 +103,15 @@ struct workio_cmd {
 enum algos {
 	ALGO_SCRYPT,		/* scrypt(1024,1,1) */
 	ALGO_SHA256D,		/* SHA-256d */
+    ALGO_SHA256T,		/* SHA-256t */
+    ALGO_SHA256Q,		/* SHA-256q */
 };
 
 static const char *algo_names[] = {
 	[ALGO_SCRYPT]		= "scrypt",
 	[ALGO_SHA256D]		= "sha256d",
+    [ALGO_SHA256T]		= "sha256t",
+    [ALGO_SHA256Q]		= "sha256q",
 };
 
 bool opt_debug = false;
@@ -1121,13 +1125,20 @@ static void stratum_gen_work(struct stratum_ctx *sctx, struct work *work)
 		free(xnonce2str);
 	}
 
-	if (opt_algo == ALGO_SCRYPT)
+    if (opt_algo == ALGO_SCRYPT){
 		diff_to_target(work->target, sctx->job.diff / 65536.0);
-    else{
+    } else if (opt_algo == ALGO_SHA256D){
+        diff_to_target(work->target, sctx->job.diff);
+    } else if (opt_algo == ALGO_SHA256T){
+        diff_to_target(work->target, sctx->job.diff/ 1024.0);
+    } else if (opt_algo == ALGO_SHA256Q){
+        // For GoldHash of BitGold
         // (work of btc = max256/compact(0x1d00ffff)
         // (work of gold= max256/compact(0x1e0ffff0)
-        // rel_diff = btc/gold = compact(0x1e0ffff0)/compact(0x1d00ffff) = 65536;
+        // rel_diff = btc/gold = compact(0x1e0ffff0)/compact(0x1d00ffff) = 4096;
         diff_to_target(work->target, sctx->job.diff/ 4096.0);
+    } else {
+        diff_to_target(work->target, sctx->job.diff);
     }
 }
 
@@ -1223,6 +1234,8 @@ static void *miner_thread(void *userdata)
 				max64 = opt_scrypt_n < 16 ? 0x3ffff : 0x3fffff / opt_scrypt_n;
 				break;
 			case ALGO_SHA256D:
+            case ALGO_SHA256T:
+            case ALGO_SHA256Q:
 				max64 = 0x1fffff;
 				break;
 			}
@@ -1246,6 +1259,16 @@ static void *miner_thread(void *userdata)
 			rc = scanhash_sha256d(thr_id, work.data, work.target,
 			                      max_nonce, &hashes_done);
 			break;
+
+        case ALGO_SHA256T:
+            rc = scanhash_sha256t(thr_id, work.data, work.target,
+                                  max_nonce, &hashes_done);
+            break;
+
+        case ALGO_SHA256Q:
+            rc = scanhash_sha256q(thr_id, work.data, work.target,
+                                  max_nonce, &hashes_done);
+            break;
 
 		default:
 			/* should never happen */
@@ -1572,11 +1595,14 @@ static void parse_arg(int key, char *arg, char *pname)
 	case 'a':
 		for (i = 0; i < ARRAY_SIZE(algo_names); i++) {
 			v = strlen(algo_names[i]);
+            // Judge the algo
 			if (!strncmp(arg, algo_names[i], v)) {
+                // bingo!
 				if (arg[v] == '\0') {
-					opt_algo = i;
+                    opt_algo = i;
 					break;
 				}
+                // Special arguments for scrypt:N
 				if (arg[v] == ':' && i == ALGO_SCRYPT) {
 					char *ep;
 					v = strtol(arg+v+1, &ep, 10);
@@ -1586,7 +1612,7 @@ static void parse_arg(int key, char *arg, char *pname)
 					opt_scrypt_n = v;
 					break;
 				}
-			}
+            }
 		}
 		if (i == ARRAY_SIZE(algo_names)) {
 			fprintf(stderr, "%s: unknown algorithm -- '%s'\n",
