@@ -700,7 +700,7 @@ int scanhash_sha256q(int thr_id, uint32_t *pdata, const uint32_t *ptarget,
             words[8-i-1] = swab32(((uint32_t*)hash)[i]);
         }
 
-        if (hash[0] == 0 /*minimal test first*/ && fulltest(words, ptarget)) {
+        if (hash[0] == 0 && hash[1] == 0 /*minimal test first*/ && fulltest(words, ptarget)) {
             *hashes_done = n - first_nonce + 1;
             return 1;
         }
