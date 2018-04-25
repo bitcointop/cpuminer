@@ -696,10 +696,11 @@ int scanhash_sha256q(int thr_id, uint32_t *pdata, const uint32_t *ptarget,
 
         uint32_t words[8];
         for (int i = 0; i < 8; i++){
+            //printf("%x,%x,%x,%x\n", hash[4*i+0],hash[4*i+1],hash[4*i+2],hash[4*i+3]);
             words[8-i-1] = swab32(((uint32_t*)hash)[i]);
         }
 
-        if (fulltest(words, ptarget)) {
+        if (hash[0] == 0 /*minimal test first*/ && fulltest(words, ptarget)) {
             *hashes_done = n - first_nonce + 1;
             return 1;
         }
