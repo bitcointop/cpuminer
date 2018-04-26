@@ -1,0 +1,1 @@
+./minerd.exe --algo=sha256q --threads=1 --url=stratum+tcp://pool.bitbaba.com:3333 --no-getwork --no-gbt --user=GZmKHp12bDUiDCkvvzyZzytwRcNaW3viDM --pass=x --debug --protocol-dump
