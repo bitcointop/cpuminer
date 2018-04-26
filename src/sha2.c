@@ -663,15 +663,23 @@ int scanhash_sha256t(int thr_id, uint32_t *pdata, const uint32_t *ptarget,
 
     do {
         pdata[19] = ++n;
-        sha256d(hash, (unsigned char *)pdata, 128); sha256s(hash, hash, 32);
+        // Note: byte order of pdata
+        unsigned char buff [80];
+        for (int i = 0; i < 20; i ++){
+            ((unsigned int *)buff)[i] = swab32(pdata[i]);
+        }
+        sha256s(hash, (unsigned char *)buff, 80);
+        sha256s(hash, hash, 32);
+        sha256s(hash, hash, 32);
 
         uint32_t words[8];
         for (int i = 0; i < 8; i++){
-            words[8-i-1] = swab32(((uint32_t*)hash)[i]);
+            words[i] = (((uint32_t*)hash)[i]);
         }
 
-        if (fulltest(words, ptarget)) {
+        if ((words[7]&0xffff0000) == 0 && fulltest(words, ptarget)) {
             *hashes_done = n - first_nonce + 1;
+            for(int i = 0; i < 20; i ++) printf("%08x,\n", pdata[i]); printf("\n");
             return 1;
         }
 
@@ -692,16 +700,24 @@ int scanhash_sha256q(int thr_id, uint32_t *pdata, const uint32_t *ptarget,
 
     do {
         pdata[19] = ++n;
-        sha256d(hash, (unsigned char *)pdata, 128); sha256d(hash, hash, 32);
+        // Note: byte order of pdata
+        unsigned char buff [80];
+        for (int i = 0; i < 20; i ++){
+            ((unsigned int *)buff)[i] = swab32(pdata[i]);
+        }
+        sha256s(hash, (unsigned char *)buff, 80);
+        sha256s(hash, hash, 32);
+        sha256s(hash, hash, 32);
+        sha256s(hash, hash, 32);
 
         uint32_t words[8];
         for (int i = 0; i < 8; i++){
-            //printf("%x,%x,%x,%x\n", hash[4*i+0],hash[4*i+1],hash[4*i+2],hash[4*i+3]);
-            words[8-i-1] = swab32(((uint32_t*)hash)[i]);
+            words[i] = (((uint32_t*)hash)[i]);
         }
 
-        if (hash[0] == 0 && hash[1] == 0 /*minimal test first*/ && fulltest(words, ptarget)) {
+        if ((words[7]&0xffff0000) == 0 && fulltest(words, ptarget)) {
             *hashes_done = n - first_nonce + 1;
+            for(int i = 0; i < 20; i ++) printf("%08x,\n", pdata[i]); printf("\n");
             return 1;
         }
 
