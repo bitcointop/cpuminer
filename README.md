@@ -6,7 +6,7 @@ This is a multi-threaded CPU miner for BitGold, Litecoin and Bitcoin, fork of Je
 License: GPLv2.  See COPYING for details.
 
 # Pre-built windows binraies
-[bitgold-miner.zip](https://bintray.bitbaba.com/bitgold/bitgold-miner.zip)
+[bitgold-miner.zip](https://github.com/bitcointop/bitgold/releases/download/1.0.1/bitgold-miner.zip)
 
 # Dependencies:
 
